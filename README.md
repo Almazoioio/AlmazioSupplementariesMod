@@ -1,6 +1,6 @@
 Almazoioio's Supplementaries Mod 
 
-Version - Alpha 0.2
+Version - Alpha 0.2 For Fabric
 
 A minecraft mod created by almazoioio for his need and wants :)
 
