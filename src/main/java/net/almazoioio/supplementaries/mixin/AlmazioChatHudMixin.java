@@ -1,6 +1,7 @@
 package net.almazoioio.supplementaries.mixin;
 
 import net.almazoioio.supplementaries.AlmazioData;
+import net.almazoioio.supplementaries.AlmazioMod;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.MessageIndicator;
@@ -12,6 +13,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+
+import java.net.Inet4Address;
 
 @Mixin(ChatHud.class)
 public class AlmazioChatHudMixin {
@@ -33,5 +37,15 @@ public class AlmazioChatHudMixin {
 		{
 			AlmazioData.log = true;
 		}
+	}
+	@Inject(at = @At("HEAD"), method = "scroll", locals = LocalCapture.CAPTURE_FAILHARD)
+	private void almazioScroll(int scroll, CallbackInfo info) {
+		if (AlmazioData.scroll + scroll > 0) {
+			AlmazioData.scroll += scroll;
+		} else
+		{
+			AlmazioData.scroll = 0;
+		}
+		AlmazioMod.LOGGER.info(Integer.toString(AlmazioData.scroll)+" scroll");
 	}
 }

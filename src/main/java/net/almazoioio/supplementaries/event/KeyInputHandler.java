@@ -9,14 +9,18 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.Calendar;
+
 public class KeyInputHandler {
     public static final String KEY_CATEGORY_ALMAZIO = "key.category.almaziosupplementaries.almaziosupplementaries";
     public static final String KEY_LEFT = "key.almaziosupplementaries.left";
     public static final String KEY_RIGHT = "key.almaziosupplementaries.right";
     public static final String KEY_TOGGLE = "key.almaziosupplementaries.toggle";
+    public static final String KEY_FADE = "key.almaziosupplementaries.fade";
     public static KeyBinding toggleKey;
     public static KeyBinding leftKey;
     public static KeyBinding rightKey;
+    public static KeyBinding fadeKey;
 
 
     public static void registerKeyInputs()
@@ -35,6 +39,7 @@ public class KeyInputHandler {
 
                 if(rightKey.wasPressed())
                 {
+                    AlmazioData.chatSwitched = Calendar.getInstance().getTimeInMillis();
                     if(AlmazioData.mode+1 > AlmazioData.modes-1)
                     {
                         AlmazioData.mode = 0;
@@ -47,6 +52,7 @@ public class KeyInputHandler {
                 }
                 if(leftKey.wasPressed())
                 {
+                    AlmazioData.chatSwitched = Calendar.getInstance().getTimeInMillis();
                     if(AlmazioData.mode-1 < 0)
                     {
                         AlmazioData.mode = 2;
@@ -56,6 +62,21 @@ public class KeyInputHandler {
                         AlmazioData.mode--;
                         AlmazioData.switchChat();
                     }
+                }
+                if (fadeKey.wasPressed())
+                {
+                    if (AlmazioData.isFade) {
+                        AlmazioData.isFade = false;
+                        AlmazioData.scroll = 0;
+                        AlmazioData.lastScroll = 0;
+                        AlmazioData.isFadeSwitched = false;
+                    } else {
+                        AlmazioData.isFade = true;
+
+                        AlmazioData.switchFade();
+                        AlmazioMod.LOGGER.info("WTF");
+                    }
+
                 }
         });
     }
@@ -77,6 +98,12 @@ public class KeyInputHandler {
                 KEY_RIGHT,
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT,
+                KEY_CATEGORY_ALMAZIO
+        ));
+        fadeKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                KEY_FADE,
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_F6,
                 KEY_CATEGORY_ALMAZIO
         ));
         registerKeyInputs();

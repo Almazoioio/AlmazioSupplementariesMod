@@ -1,34 +1,25 @@
 package net.almazoioio.supplementaries;
 
-import com.mojang.authlib.minecraft.client.MinecraftClient;
 import net.almazoioio.supplementaries.client.AlmazioChat;
-import net.fabricmc.loader.impl.game.minecraft.MinecraftGameProvider;
-import net.minecraft.client.MinecraftClientGame;
-import net.minecraft.client.gui.hud.ChatHud;
-import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.client.gui.hud.PlayerListHud;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.util.ChatMessages;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.dedicated.MinecraftDedicatedServer;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
 
 import java.util.*;
 
 public class AlmazioData {
     public static boolean showChat = true;
+    public static boolean isFade = true;
+    public static boolean isFadeSwitched = true;
     public static boolean isChatSwitched = false;
+    public static long chatSwitched = Calendar.getInstance().getTimeInMillis();
     public static boolean log = true;
     public static List<OrderedText> visibleMsg = new ArrayList<OrderedText>();
     public static int visibleMsgs = 20;
     public static List<OrderedText> appending = new ArrayList<OrderedText>();
     public static List<OrderedText> deappending = new ArrayList<OrderedText>();
-    public static long y = 0;
-    public static long start = 0;
+
+    public static long y;
     public static long[] timeMsg = new long[0];
     public static long[] append(long[] list, long num)
     {
@@ -59,6 +50,7 @@ public class AlmazioData {
     }
     //public static long time() {return Calendar.getInstance().getTimeInMillis();}
     public static int scroll = 0;
+    public static int lastScroll = 0;
     public static int mode = 0;
     public static int modes = 0;
     public static List<AlmazioChat> chats = new ArrayList<AlmazioChat>();
@@ -212,6 +204,95 @@ public class AlmazioData {
             }
             timeMsg = deAppend(timeMsg);
             timeMsg = append(timeMsg, Calendar.getInstance().getTimeInMillis());
+        }
+    }
+
+    public static void switchFade() {
+        isFadeSwitched = true;
+        visibleMsg.clear();
+
+        List<OrderedText> texts = chats.get(mode).orderedMsg;
+        int size = texts.size();
+
+        List<OrderedText> temp = new ArrayList<OrderedText>();
+        if (size < visibleMsgs) {
+
+            for (OrderedText text : texts) {
+                if (visibleMsg.size() < visibleMsgs) {
+                    visibleMsg.add(text);
+                } else {
+                    for (int i = 1; i < visibleMsgs; i++) {
+                        visibleMsg.set(i - 1, visibleMsg.get(i));
+                    }
+                    visibleMsg.remove(visibleMsgs - 1);
+                    visibleMsg.add(texts.get(size - 1));
+                }
+            }
+        } else {
+
+            for (int i = size - visibleMsgs; i < size; i++) {
+                temp.add(texts.get(i));
+            }
+
+            for (OrderedText text : temp) {
+                if (visibleMsg.size() < visibleMsgs) {
+                    visibleMsg.add(text);
+                } else {
+                    for (int i = 1; i < visibleMsgs; i++) {
+                        visibleMsg.set(i - 1, visibleMsg.get(i));
+                    }
+                    visibleMsg.remove(visibleMsgs - 1);
+                    visibleMsg.add(texts.get(size - 1));
+                }
+            }
+        }
+
+        for (int i = 0; i < visibleMsgs; i++)
+        {
+            timeMsg = append(timeMsg, Calendar.getInstance().getTimeInMillis());
+        }
+
+    }
+
+
+    public static void updateScroll() {
+
+        List<OrderedText> texts = chats.get(mode).orderedMsg;
+        int size = texts.size();
+
+        AlmazioMod.LOGGER.info(Integer.toString(size - visibleMsgs - scroll));
+        if (lastScroll != scroll) {
+            visibleMsg.clear();
+            timeMsg = new long[0];
+
+
+
+            List<OrderedText> temp = new ArrayList<OrderedText>();
+
+            if(size - visibleMsgs - scroll > 0) {
+                for (int i = size - visibleMsgs - scroll; i < size - scroll; i++) {
+                    temp.add(texts.get(i));
+                }
+            }  else
+            {
+                scroll = size - visibleMsgs;
+                for (int i = 0; i < visibleMsgs; i++) {
+                    temp.add(texts.get(i));
+                }
+            }
+
+            for (OrderedText text : temp) {
+                if (visibleMsg.size() < visibleMsgs) {
+                    visibleMsg.add(text);
+                } else {
+                    for (int i = 1; i < visibleMsgs; i++) {
+                        visibleMsg.set(i - 1, visibleMsg.get(i));
+                    }
+                    visibleMsg.remove(visibleMsgs - 1);
+                    visibleMsg.add(texts.get(size - 1));
+                }
+            }
+            lastScroll = scroll;
         }
     }
 }
